@@ -3,7 +3,12 @@
 [ext_resource type="Script" path="res://Main.gd" id="1_fcgpm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rmgue"]
-bg_color = Color(1, 1, 1, 1)
+bg_color = Color(0.2, 0.2, 0.2, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.231373, 0.8, 0.0862745, 1)
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -42,9 +47,17 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_rmgue")
 layout_mode = 2
 theme_override_constants/separation = 20
 
+[node name="Label" type="Label" parent="M/HB/VB"]
+layout_mode = 2
+text = "Select a color and click a grid cell to add it to a group.
+Shift click on a cell to add the number + math operator
+such as 12+ to a group.
+Click on the Solve button to evaluate the Kenken puzzle."
+
 [node name="ColorPicker" type="ColorPicker" parent="M/HB/VB"]
 unique_name_in_owner = true
 layout_mode = 2
+color = Color(1, 0.231373, 0.231373, 1)
 edit_alpha = false
 can_add_swatches = false
 sampler_visible = false
@@ -70,3 +83,4 @@ placeholder_text = "Enter number and operator"
 
 [connection signal="pressed" from="M/HB/VB/Solve" to="." method="_on_solve_pressed"]
 [connection signal="popup_hide" from="PopupPanel" to="." method="_on_popup_panel_popup_hide"]
+[connection signal="text_submitted" from="PopupPanel/LineEdit" to="." method="_on_line_edit_text_submitted"]

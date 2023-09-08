@@ -9,7 +9,10 @@ func _ready():
 		var button: Button = %Cell
 		if n > 0:
 			button = %Cell.duplicate()
+			var style_box = button.get("theme_override_styles/normal")
+			button.set("theme_override_styles/normal", style_box.duplicate())
 			%Grid.add_child(button)
+		button.set_meta("group_id", 0)
 		button.pressed.connect(on_button_clicked.bind(button))
 
 
@@ -18,7 +21,11 @@ func on_button_clicked(b: Button):
 		current_button = b
 		$PopupPanel.popup()
 		$PopupPanel/LineEdit.grab_focus()
-	b.modulate = %ColorPicker.color
+		$PopupPanel/LineEdit.text = ""
+	else:
+		var style_box = b.get("theme_override_styles/normal")
+		style_box.border_color = %ColorPicker.color
+		b.set_meta("group_id", %ColorPicker.color.to_rgba32())
 
 
 func _on_popup_panel_popup_hide():
@@ -33,7 +40,7 @@ func _on_solve_pressed():
 func extract_groups():
 	var idx = 0
 	for cell in %Grid.get_children():
-		var key = cell.modulate
+		var key = cell.get_meta("group_id")
 		if groups.has(key):
 			groups[key].append(idx)
 		else:
@@ -44,8 +51,12 @@ func extract_groups():
 
 func extract_ops():
 	for cell in %Grid.get_children():
-		var key = cell.modulate
+		var key = cell.get_meta("group_id")
 		var txt = cell.text
 		if txt.length() > 0:
 			ops[key] = [int(txt.left(-1)), txt.right(1)]
 	print(ops)
+
+
+func _on_line_edit_text_submitted(_new_text):
+	$PopupPanel.hide()
