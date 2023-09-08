@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=3 uid="uid://je0ich1o1v5i"]
+
+[ext_resource type="Script" path="res://Main.gd" id="1_fcgpm"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rmgue"]
+bg_color = Color(1, 1, 1, 1)
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_fcgpm")
+
+[node name="M" type="MarginContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HB" type="HBoxContainer" parent="M"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Grid" type="GridContainer" parent="M/HB"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 6
+
+[node name="Cell" type="Button" parent="M/HB/Grid"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_rmgue")
+
+[node name="VB" type="VBoxContainer" parent="M/HB"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ColorPicker" type="ColorPicker" parent="M/HB/VB"]
+unique_name_in_owner = true
+layout_mode = 2
+edit_alpha = false
+can_add_swatches = false
+sampler_visible = false
+color_modes_visible = false
+sliders_visible = false
+hex_visible = false
+presets_visible = false
+
+[node name="Solve" type="Button" parent="M/HB/VB"]
+layout_mode = 2
+text = "Solve"
+
+[node name="PopupPanel" type="PopupPanel" parent="."]
+initial_position = 1
+size = Vector2i(300, 100)
+
+[node name="LineEdit" type="LineEdit" parent="PopupPanel"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 296.0
+offset_bottom = 96.0
+placeholder_text = "Enter number and operator"
+
+[connection signal="pressed" from="M/HB/VB/Solve" to="." method="_on_solve_pressed"]
+[connection signal="popup_hide" from="PopupPanel" to="." method="_on_popup_panel_popup_hide"]
