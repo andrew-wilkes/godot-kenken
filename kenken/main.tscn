@@ -80,6 +80,7 @@ offset_top = 4.0
 offset_right = 296.0
 offset_bottom = 96.0
 placeholder_text = "Enter number and operator"
+alignment = 1
 
 [connection signal="pressed" from="M/HB/VB/Solve" to="." method="_on_solve_pressed"]
 [connection signal="popup_hide" from="PopupPanel" to="." method="_on_popup_panel_popup_hide"]
