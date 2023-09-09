@@ -18,6 +18,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_fcgpm")
+grid_size = 16
 
 [node name="M" type="MarginContainer" parent="."]
 layout_mode = 0
@@ -35,7 +36,7 @@ theme_override_constants/separation = 20
 [node name="Grid" type="GridContainer" parent="M/HB"]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 6
+columns = 16
 
 [node name="Cell" type="Button" parent="M/HB/Grid"]
 unique_name_in_owner = true

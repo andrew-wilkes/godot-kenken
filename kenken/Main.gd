@@ -1,11 +1,14 @@
 extends Control
 
+@export var grid_size = 6
+
 var current_button: Button
 var groups = {}
 var ops = {}
 
 func _ready():
-	for n in 36:
+	%Grid.columns = grid_size
+	for n in grid_size * grid_size:
 		var button: Button = %Cell
 		if n > 0:
 			button = %Cell.duplicate()
@@ -46,7 +49,6 @@ func extract_groups():
 		else:
 			groups[key] = [idx]
 		idx += 1
-	print(groups)
 
 
 func extract_ops():
@@ -55,7 +57,6 @@ func extract_ops():
 		var txt = cell.text
 		if txt.length() > 0:
 			ops[key] = [int(txt.left(-1)), txt.right(1)]
-	print(ops)
 
 
 func _on_line_edit_text_submitted(_new_text):
