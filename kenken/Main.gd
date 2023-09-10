@@ -25,7 +25,8 @@ func _ready():
 	#test_get_candidates_for_cell()
 	#test_target_matched()
 	#test_evaluate_group()
-	test_get_number_sets_for_group()
+	#test_get_number_sets_for_group()
+	test_get_number_combos_for_set()
 
 
 func on_button_clicked(b: Button):
@@ -89,6 +90,77 @@ func get_candidates_for_cell(cell_idx: int):
 	return candidates
 
 
+func get_number_sets_for_group(group, target, op):
+	var sets = []
+	for n in range(grid_size, 0, -1):
+		get_number_set(target, op, group.size(), 0, n, [], sets)
+	return sets
+
+
+func get_number_combos_for_set(num_set: Array):
+	var combos = []
+	for nums in num_set:
+		for idx in nums.size():
+			var combo = []
+			append_num(combo, combos, idx, nums)
+	return combos
+
+
+func append_num(combo, combos, new_num_idx, nums):
+	combo.append(new_num_idx)
+	if combo.size() == nums.size():
+		# Convert indexes to the numbers
+		var combo_numbers = []
+		for idx in combo:
+			combo_numbers.append(nums[idx])
+		if not combos.has(combo_numbers):
+			combos.append(combo_numbers)
+		return
+	for idx in nums.size():
+		if combo.has(idx):
+			continue
+		append_num(combo.duplicate(), combos, idx, nums)
+
+
+func test_get_number_combos_for_set():
+	print(get_number_combos_for_set([[1,1,1,3],[3,4,1]]))
+
+
+func get_number_set(target, op, gsize, total, n, num_set, sets):
+	if total == target:
+		if num_set.size() == gsize:
+			sets.append(num_set)
+		return
+	match op:
+		'+':
+			if total + n > target:
+				return
+			total += n
+			num_set.append(n)
+		'-':
+			if total - n < target:
+				return
+			total -= n
+			num_set.append(n)
+		'*':
+			if total * n > target:
+				return
+			total *= n
+			num_set.append(n)
+		'/':
+			if total / n < target:
+				return
+			total /= n
+			num_set.append(n)
+	#print(set)
+	for m in range(n, 0, -1):
+		get_number_set(target, op, gsize, total, m, num_set.duplicate(), sets)
+
+
+func test_get_number_sets_for_group():
+	print(get_number_sets_for_group([1,1,1,1], 6, '+'))
+
+
 func evaluate_group(group: Array, target, op):
 	var matched = false
 	# Loop over all combinations of numbers in group
@@ -116,48 +188,6 @@ func append_idx(ids: Array, new_id, indexes, group: Array, target, op):
 		print(ids)
 		matched = target_matched(ids, group, target, op)
 	return matched
-
-
-func get_number_sets_for_group(group, target, op):
-	var sets = []
-	for n in range(grid_size, 0, -1):
-		get_number_set(target, op, group.size(), 0, n, [], sets)
-	return sets
-
-
-func get_number_set(target, op, gsize, total, n, set, sets):
-	if total == target:
-		if set.size() == gsize:
-			sets.append(set)
-		return
-	match op:
-		'+':
-			if total + n > target:
-				return
-			total += n
-			set.append(n)
-		'-':
-			if total - n < target:
-				return
-			total -= n
-			set.append(n)
-		'*':
-			if total * n > target:
-				return
-			total *= n
-			set.append(n)
-		'/':
-			if total / n < target:
-				return
-			total /= n
-			set.append(n)
-	print(set)
-	for m in range(n, 0, -1):
-		get_number_set(target, op, gsize, total, m, set.duplicate(), sets)
-
-
-func test_get_number_sets_for_group():
-	print(get_number_sets_for_group([1,1,1,1], 6, '+'))
 
 
 func target_matched(ids, group, target, op):
