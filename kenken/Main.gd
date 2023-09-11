@@ -1,18 +1,22 @@
 extends Control
 
-@export var grid_size = 6
+@export var grid_size = 4
 
 var current_button: Button
-var groups = {}
-var ops = {}
+var cages = {}
 var grid_numbers = []
 var numbers
+
+class Cage:
+	var cells = []
+	var number_sets = []
+	var target = 0
+	var op = '+'
 
 func _ready():
 	numbers = range(1, grid_size + 1)
 	%Grid.columns = grid_size
 	grid_numbers.resize(grid_size * grid_size)
-	grid_numbers.fill(0)
 	for n in grid_size * grid_size:
 		var button: Button = %Cell
 		if n > 0:
@@ -20,13 +24,14 @@ func _ready():
 			var style_box = button.get("theme_override_styles/normal")
 			button.set("theme_override_styles/normal", style_box.duplicate())
 			%Grid.add_child(button)
-		button.set_meta("group_id", 0)
+		button.set_meta("cage_id", 0)
 		button.pressed.connect(on_button_clicked.bind(button))
 	#test_get_candidates_for_cell()
 	#test_target_matched()
-	#test_evaluate_group()
-	#test_get_number_sets_for_group()
-	test_get_number_combos_for_set()
+	#test_evaluate_cage()
+	test_get_number_sets_for_cage()
+	#test_get_number_combos_for_set()
+	#test_valid_grid()
 
 
 func on_button_clicked(b: Button):
@@ -38,7 +43,7 @@ func on_button_clicked(b: Button):
 	else:
 		var style_box = b.get("theme_override_styles/normal")
 		style_box.border_color = %ColorPicker.color
-		b.set_meta("group_id", %ColorPicker.color.to_rgba32())
+		b.set_meta("cage_id", %ColorPicker.color.to_rgba32())
 
 
 func _on_popup_panel_popup_hide():
@@ -46,29 +51,66 @@ func _on_popup_panel_popup_hide():
 
 
 func _on_solve_pressed():
-	extract_groups()
-	extract_ops()
-	# Populate the grid numbers
-	# Test groups for solution
+	grid_numbers.fill(0)
+	extract_cages()
+	set_number_sets()
+	if apply_numbers_to_grid(0):
+		print(grid_numbers)
+	else:
+		print("FAILED")
 
 
-func extract_groups():
+func extract_cages():
 	var idx = 0
 	for cell in %Grid.get_children():
-		var key = cell.get_meta("group_id")
-		if groups.has(key):
-			groups[key].append(idx)
+		var key = cell.get_meta("cage_id")
+		var txt = cell.text
+		if cages.has(key):
+			cages[key].cells.append(idx)
 		else:
-			groups[key] = [idx]
+			var cage = Cage.new()
+			cage.cells = [idx]
+			cages[key] = cage
+		if txt.length() > 0:
+			cages[key].target = int(txt.left(-1))
+			cages[key].op = txt.right(1)
 		idx += 1
 
 
-func extract_ops():
-	for cell in %Grid.get_children():
-		var key = cell.get_meta("group_id")
-		var txt = cell.text
-		if txt.length() > 0:
-			ops[key] = [int(txt.left(-1)), txt.right(1)]
+func set_number_sets():
+	for cage in cages.values():
+		cage.number_sets = get_number_sets_for_cage(cage.cells, cage.target, cage.op)
+
+
+func apply_numbers_to_grid(cage_id):
+	if cage_id == cages.size():
+		return true 
+	for number_set in cages.values()[cage_id].number_sets:
+		for idx in number_set.size():
+			grid_numbers[cages[cage_id].cells[idx]] = number_set[idx]
+		if valid_grid() and apply_numbers_to_grid(cage_id + 1):
+			return true
+	return false
+
+
+func valid_grid():
+	# Each row or column must contain only 1 of numbers > 0
+	var x = 0
+	var y = 0
+	var xoff = grid_size * grid_size - grid_size + 1
+	for n in grid_size:
+		var row = grid_numbers.slice(y, y + grid_size)
+		var col = grid_numbers.slice(x, x + xoff, grid_size)
+		#print(row)
+		#print(col)
+		for num in numbers:
+			if row.count(num) > 1:
+				return false
+			if col.count(num) > 1:
+				return false
+		x += 1
+		y += grid_size
+	return true
 
 
 func _on_line_edit_text_submitted(_new_text):
@@ -90,11 +132,47 @@ func get_candidates_for_cell(cell_idx: int):
 	return candidates
 
 
-func get_number_sets_for_group(group, target, op):
+func get_number_sets_for_cage(cells, target, op):
 	var sets = []
-	for n in range(grid_size, 0, -1):
-		get_number_set(target, op, group.size(), 0, n, [], sets)
+	for n in range(grid_size, 1, -1):
+		get_number_set(target, op, cells.size(), 0, n, [n], sets)
 	return sets
+
+
+func get_number_set(target, op, cage_size, total, n, num_set, sets):
+	if total == target:
+		if num_set.size() == cage_size:
+			# Take care of bug where duplicate sets are made
+			if not sets.has(num_set):
+				sets.append(num_set)
+		return
+	if total == 0:
+		total = n
+	else:
+		match op:
+			'+':
+				if total + n > target:
+					return
+				total += n
+				num_set.append(n)
+			'-':
+				if total - n < target:
+					return
+				total -= n
+				num_set.append(n)
+			'*':
+				if total * n > target:
+					return
+				total *= n
+				num_set.append(n)
+			'/':
+				if total / n < target:
+					return
+				total /= n
+				num_set.append(n)
+	#print(set)
+	for m in range(n, 0, -1):
+		get_number_set(target, op, cage_size, total, m, num_set.duplicate(), sets)
 
 
 func get_number_combos_for_set(num_set: Array):
@@ -122,58 +200,19 @@ func append_num(combo, combos, new_num_idx, nums):
 		append_num(combo.duplicate(), combos, idx, nums)
 
 
-func test_get_number_combos_for_set():
-	print(get_number_combos_for_set([[1,1,1,3],[3,4,1]]))
-
-
-func get_number_set(target, op, gsize, total, n, num_set, sets):
-	if total == target:
-		if num_set.size() == gsize:
-			sets.append(num_set)
-		return
-	match op:
-		'+':
-			if total + n > target:
-				return
-			total += n
-			num_set.append(n)
-		'-':
-			if total - n < target:
-				return
-			total -= n
-			num_set.append(n)
-		'*':
-			if total * n > target:
-				return
-			total *= n
-			num_set.append(n)
-		'/':
-			if total / n < target:
-				return
-			total /= n
-			num_set.append(n)
-	#print(set)
-	for m in range(n, 0, -1):
-		get_number_set(target, op, gsize, total, m, num_set.duplicate(), sets)
-
-
-func test_get_number_sets_for_group():
-	print(get_number_sets_for_group([1,1,1,1], 6, '+'))
-
-
-func evaluate_group(group: Array, target, op):
+func evaluate_cage(cage: Array, target, op):
 	var matched = false
-	# Loop over all combinations of numbers in group
-	var indexes = range(group.size())
+	# Loop over all combinations of numbers in cage
+	var indexes = range(cage.size())
 	for idx in indexes:
 		var ids = []
-		matched = append_idx(ids, idx, indexes, group, target, op)
+		matched = append_idx(ids, idx, indexes, cage, target, op)
 		if matched:
 			break
 	return matched
 
 
-func append_idx(ids: Array, new_id, indexes, group: Array, target, op):
+func append_idx(ids: Array, new_id, indexes, cage: Array, target, op):
 	var done = true
 	var matched = false
 	ids.append(new_id)
@@ -181,19 +220,19 @@ func append_idx(ids: Array, new_id, indexes, group: Array, target, op):
 		if ids.has(idx):
 			continue
 		done = false
-		matched = append_idx(ids.duplicate(), idx, indexes, group, target, op)
+		matched = append_idx(ids.duplicate(), idx, indexes, cage, target, op)
 		if matched:
 			break
 	if done:
 		print(ids)
-		matched = target_matched(ids, group, target, op)
+		matched = target_matched(ids, cage, target, op)
 	return matched
 
 
-func target_matched(ids, group, target, op):
+func target_matched(ids, cage, target, op):
 	var n = 0
 	for idx in ids:
-		var cell_idx = group[idx]
+		var cell_idx = cage[idx]
 		var num = grid_numbers[cell_idx]
 		if num == 0:
 			continue
@@ -228,10 +267,10 @@ func test_target_matched():
 	assert(target_matched([0,1,2],[5,1,3],2,'-'))
 
 
-func test_evaluate_group():
+func test_evaluate_cage():
 	grid_numbers = [3,4,8,2,2,8]
-	assert(evaluate_group([0,1], 7, '+'))
-	assert(evaluate_group([4,5], 4, '/'))
+	assert(evaluate_cage([0,1], 7, '+'))
+	assert(evaluate_cage([4,5], 4, '/'))
 
 
 func test_get_candidates_for_cell():
@@ -240,3 +279,24 @@ func test_get_candidates_for_cell():
 	assert(get_candidates_for_cell(0) == [3,5,6])
 	assert(get_candidates_for_cell(5) == [3,4,5])
 	assert(get_candidates_for_cell(15) == [1,3,4,5])
+
+
+func test_get_number_combos_for_set():
+	print(get_number_combos_for_set([[1,1,1,3],[3,4,1]]))
+
+
+func test_get_number_sets_for_cage():
+	print(get_number_sets_for_cage([1,1,1,1], 6, '+'))
+	print(get_number_sets_for_cage([1,1], 3, '+'))
+	print(get_number_sets_for_cage([1,1,1], 8, '+'))
+	#print(get_number_sets_for_cage([1,1], 2, '/'))
+
+
+func test_valid_grid():
+	grid_size = 4
+	grid_numbers = [1,2,3,4, 2,3,4,1, 3,4,1,2, 4,1,2,3]
+	assert(valid_grid())
+	grid_numbers = [1,2,3,4, 2,3,2,1, 3,4,1,2, 4,1,0,3] # 2 in row
+	assert(not valid_grid())
+	grid_numbers = [0,1,2,3, 1,4,3,2, 3,4,1,0, 2,3,0,0] # 4 in col
+	assert(not valid_grid())
