@@ -29,9 +29,10 @@ func _ready():
 	#test_get_candidates_for_cell()
 	#test_target_matched()
 	#test_evaluate_cage()
-	test_get_number_sets_for_cage()
+	#test_get_number_sets_for_cage()
 	#test_get_number_combos_for_set()
 	#test_valid_grid()
+	preset_grid()
 
 
 func on_button_clicked(b: Button):
@@ -52,6 +53,7 @@ func _on_popup_panel_popup_hide():
 
 func _on_solve_pressed():
 	grid_numbers.fill(0)
+	cages.clear()
 	extract_cages()
 	set_number_sets()
 	if apply_numbers_to_grid(0):
@@ -79,7 +81,8 @@ func extract_cages():
 
 func set_number_sets():
 	for cage in cages.values():
-		cage.number_sets = get_number_sets_for_cage(cage.cells, cage.target, cage.op)
+		var number_sets = get_number_sets_for_cage(cage.cells, cage.target, cage.op)
+		cage.number_sets = get_number_combos_for_set(number_sets)
 
 
 func apply_numbers_to_grid(cage_id):
@@ -87,7 +90,7 @@ func apply_numbers_to_grid(cage_id):
 		return true 
 	for number_set in cages.values()[cage_id].number_sets:
 		for idx in number_set.size():
-			grid_numbers[cages[cage_id].cells[idx]] = number_set[idx]
+			grid_numbers[cages.values()[cage_id].cells[idx]] = number_set[idx]
 		if valid_grid() and apply_numbers_to_grid(cage_id + 1):
 			return true
 	return false
@@ -177,9 +180,9 @@ func get_number_set(target, op, cage_size, total, n, num_set, sets):
 			break
 
 
-func get_number_combos_for_set(num_set: Array):
+func get_number_combos_for_set(num_sets: Array):
 	var combos = []
-	for nums in num_set:
+	for nums in num_sets:
 		for idx in nums.size():
 			var combo = []
 			append_num(combo, combos, idx, nums)
@@ -289,6 +292,13 @@ func test_get_number_combos_for_set():
 
 func test_get_number_sets_for_cage():
 	grid_size = 4
+	print(get_number_sets_for_cage([1,1], 12, '*'))
+	print(get_number_sets_for_cage([1,1], 2, '/'))
+	print(get_number_sets_for_cage([1,1,1], 12, '*'))
+	print(get_number_sets_for_cage([1,1,1], 6, '+'))
+	print(get_number_sets_for_cage([1,1], 3, '+'))
+	print(get_number_sets_for_cage([1,1], 1, '-'))
+	print(get_number_sets_for_cage([1,1], 12, '*'))
 	print(get_number_sets_for_cage([1,1,1,1], 6, '+'))
 	print(get_number_sets_for_cage([1,1], 3, '+'))
 	print(get_number_sets_for_cage([1,1,1], 8, '+'))
@@ -305,3 +315,21 @@ func test_valid_grid():
 	assert(not valid_grid())
 	grid_numbers = [0,1,2,3, 1,4,3,2, 3,4,1,0, 2,3,0,0] # 4 in col
 	assert(not valid_grid())
+
+
+func preset_grid():
+	var cid = 0.0
+	var color = Color.RED
+	var ops = ["12*", "2/", "2/", "12*", "6+", "3+", "1-"]
+	for cage in [[0,1],[2,3],[4,8],[5,6,7],[9,10,14],[12,13],[11,15]]:
+		color.h = cid / 7.0
+		for idx in cage.size():
+			var b = %Grid.get_child(cage[idx])
+			var style_box = b.get("theme_override_styles/normal")
+			style_box.border_color = color
+			b.set_meta("cage_id", cid)
+			if idx == 0:
+				b.text = ops[cid]
+			else:
+				b.text = ""
+		cid += 1.0
