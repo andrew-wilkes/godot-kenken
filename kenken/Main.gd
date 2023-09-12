@@ -134,18 +134,19 @@ func get_candidates_for_cell(cell_idx: int):
 
 func get_number_sets_for_cage(cells, target, op):
 	var sets = []
-	for n in range(grid_size, 1, -1):
+	for n in range(grid_size, 0, -1): # 4 3 2 1 if grid_size is 4
 		get_number_set(target, op, cells.size(), 0, n, [n], sets)
 	return sets
 
 
 func get_number_set(target, op, cage_size, total, n, num_set, sets):
-	if total == target:
-		if num_set.size() == cage_size:
+	#prints(n, num_set)
+	if num_set.size() == cage_size:
+		if total == target:
 			# Take care of bug where duplicate sets are made
-			if not sets.has(num_set):
-				sets.append(num_set)
-		return
+			#if not sets.has(num_set):
+			sets.append(num_set)
+		return true
 	if total == 0:
 		total = n
 	else:
@@ -171,8 +172,9 @@ func get_number_set(target, op, cage_size, total, n, num_set, sets):
 				total /= n
 				num_set.append(n)
 	#print(set)
-	for m in range(n, 0, -1):
-		get_number_set(target, op, cage_size, total, m, num_set.duplicate(), sets)
+	for m in range(n, 0, -1): # n .. 1
+		if get_number_set(target, op, cage_size, total, m, num_set.duplicate(), sets):
+			break
 
 
 func get_number_combos_for_set(num_set: Array):
@@ -286,10 +288,13 @@ func test_get_number_combos_for_set():
 
 
 func test_get_number_sets_for_cage():
+	grid_size = 4
 	print(get_number_sets_for_cage([1,1,1,1], 6, '+'))
 	print(get_number_sets_for_cage([1,1], 3, '+'))
 	print(get_number_sets_for_cage([1,1,1], 8, '+'))
-	#print(get_number_sets_for_cage([1,1], 2, '/'))
+	print(get_number_sets_for_cage([1,1,1,1], 1, '-'))
+	print(get_number_sets_for_cage([1,1,1], 8, '*'))
+	print(get_number_sets_for_cage([1,1,1], 2, '/'))
 
 
 func test_valid_grid():
