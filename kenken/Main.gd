@@ -15,6 +15,17 @@ class Cage:
 	var op = '+'
 
 func _ready():
+	%SpinBox.value = grid_size
+	build_grid()
+	#test_get_candidates_for_cell()
+	#test_target_matched()
+	#test_evaluate_cage()
+	#test_get_number_sets_for_cage()
+	#test_get_number_combos_for_set()
+	#test_valid_grid()
+
+
+func build_grid():
 	numbers = range(1, grid_size + 1)
 	%Grid.columns = grid_size
 	grid_numbers.resize(grid_size * grid_size)
@@ -26,14 +37,22 @@ func _ready():
 			button.set("theme_override_styles/normal", style_box.duplicate())
 			%Grid.add_child(button)
 		button.set_meta("cage_id", 0)
-		button.pressed.connect(on_button_clicked.bind(button))
-	#test_get_candidates_for_cell()
-	#test_target_matched()
-	#test_evaluate_cage()
-	#test_get_number_sets_for_cage()
-	#test_get_number_combos_for_set()
-	#test_valid_grid()
-	preset_grid()
+		if not button.is_connected("pressed", on_button_clicked):
+			button.pressed.connect(on_button_clicked.bind(button))
+
+
+func reset_grid():
+	%Result.text = ""
+	var skip = true
+	for button in %Grid.get_children():
+		if skip:
+			skip = false
+			button.text = ""
+			var style_box = button.get("theme_override_styles/normal")
+			style_box.border_color = Color.LIME_GREEN
+			continue
+		button.queue_free()
+	build_grid()
 
 
 func on_button_clicked(b: Button):
@@ -353,3 +372,18 @@ func preset_grid():
 			else:
 				b.text = ""
 		cid += 1.0
+
+
+func _on_preset_pressed():
+	%SpinBox.value = 4
+	reset_grid()
+	await get_tree().create_timer(0.2).timeout
+	preset_grid()
+
+
+func _on_reset_pressed():
+	reset_grid()
+
+
+func _on_spin_box_value_changed(value):
+	grid_size = int(value)
