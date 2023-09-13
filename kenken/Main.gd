@@ -97,7 +97,7 @@ func extract_cages():
 			var cage = Cage.new()
 			cage.cells = [idx]
 			cages[key] = cage
-		if txt.length() > 0:
+		if txt.length() > 1:
 			cages[key].target = int(txt.left(-1))
 			cages[key].op = txt.right(1)
 		idx += 1
@@ -116,6 +116,7 @@ func apply_numbers_to_grid(cage_id):
 	for number_set in cages.values()[cage_id].number_sets:
 		for idx in number_set.size():
 			grid_numbers[cages.values()[cage_id].cells[idx]] = number_set[idx]
+		#print(stringify_grid(grid_numbers))
 		if valid_grid() and apply_numbers_to_grid(cage_id + 1):
 			return true
 	# None of the number sets could be used so reset the cells
@@ -162,6 +163,7 @@ func _on_line_edit_text_submitted(_new_text):
 func get_candidates_for_cell(cell_idx: int):
 	var candidates = numbers.duplicate()
 	# Scan row and column to remove existing numbers from candidates
+	@warning_ignore("integer_division")
 	var row_idx = cell_idx / grid_size * grid_size
 	var col_idx = cell_idx % grid_size
 	for m in grid_size:
@@ -185,8 +187,6 @@ func get_number_set(target, op, cage_size, total, n, num_set, sets):
 	#prints(n, num_set)
 	if num_set.size() == cage_size:
 		if total == target:
-			# Take care of bug where duplicate sets are made
-			#if not sets.has(num_set):
 			sets.append(num_set)
 		return true
 	if total == 0:
@@ -213,6 +213,8 @@ func get_number_set(target, op, cage_size, total, n, num_set, sets):
 					return
 				total /= n
 				num_set.append(n)
+			_:
+				return # Guard against invalid op
 	#print(set)
 	for m in range(n, 0, -1): # n .. 1
 		if get_number_set(target, op, cage_size, total, m, num_set.duplicate(), sets):
@@ -331,6 +333,7 @@ func test_get_number_combos_for_set():
 
 func test_get_number_sets_for_cage():
 	grid_size = 4
+	print(get_number_sets_for_cage([1,1,1,1], 24, '*'))
 	print(get_number_sets_for_cage([1,1], 12, '*'))
 	print(get_number_sets_for_cage([1,1], 2, '/'))
 	print(get_number_sets_for_cage([1,1,1], 12, '*'))
@@ -360,7 +363,9 @@ func preset_grid():
 	var cid = 0.0
 	var color = Color.RED
 	var ops = ["12*", "2/", "2/", "12*", "6+", "3+", "1-"]
+	#["2/","24*","7+","1-","3-","1-"]
 	for cage in [[0,1],[2,3],[4,8],[5,6,7],[9,10,14],[12,13],[11,15]]:
+		# [[0,1],[2,3,7,11],[4,8,12,13],[5,6],[9,10],[14,15]]
 		color.h = cid / 7.0
 		for idx in cage.size():
 			var b = %Grid.get_child(cage[idx])

@@ -86,13 +86,13 @@ max_value = 8.0
 value = 4.0
 prefix = "Size: "
 
-[node name="Preset" type="Button" parent="M/HB/VB3"]
-layout_mode = 2
-text = "Preset Grid"
-
 [node name="Reset" type="Button" parent="M/HB/VB3"]
 layout_mode = 2
 text = "Reset Grid"
+
+[node name="Preset" type="Button" parent="M/HB/VB3"]
+layout_mode = 2
+text = "Preset Grid"
 
 [node name="Solve" type="Button" parent="M/HB/VB3"]
 layout_mode = 2
@@ -111,8 +111,8 @@ placeholder_text = "Enter number and operator"
 alignment = 1
 
 [connection signal="value_changed" from="M/HB/VB3/SpinBox" to="." method="_on_spin_box_value_changed"]
-[connection signal="pressed" from="M/HB/VB3/Preset" to="." method="_on_preset_pressed"]
 [connection signal="pressed" from="M/HB/VB3/Reset" to="." method="_on_reset_pressed"]
+[connection signal="pressed" from="M/HB/VB3/Preset" to="." method="_on_preset_pressed"]
 [connection signal="pressed" from="M/HB/VB3/Solve" to="." method="_on_solve_pressed"]
 [connection signal="popup_hide" from="PopupPanel" to="." method="_on_popup_panel_popup_hide"]
 [connection signal="text_submitted" from="PopupPanel/LineEdit" to="." method="_on_line_edit_text_submitted"]
