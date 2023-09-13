@@ -160,6 +160,7 @@ func _on_line_edit_text_submitted(_new_text):
 	$PopupPanel.hide()
 
 
+# This function was not used in the end
 func get_candidates_for_cell(cell_idx: int):
 	var candidates = numbers.duplicate()
 	# Scan row and column to remove existing numbers from candidates
@@ -259,20 +260,14 @@ func evaluate_cage(cage: Array, target, op):
 
 
 func append_idx(ids: Array, new_id, indexes, cage: Array, target, op):
-	var done = true
 	var matched = false
 	ids.append(new_id)
 	for idx in indexes:
 		if ids.has(idx):
 			continue
-		done = false
 		matched = append_idx(ids.duplicate(), idx, indexes, cage, target, op)
 		if matched:
 			break
-	if done:
-		print(ids)
-		matched = target_matched(ids, cage, target, op)
-	return matched
 
 
 func target_matched(ids, cage, target, op):
@@ -360,12 +355,13 @@ func test_valid_grid():
 
 
 func preset_grid():
-	var cid = 0.0
+	var cid = 0
 	var color = Color.RED
 	var ops = ["12*", "2/", "2/", "12*", "6+", "3+", "1-"]
 	#["2/","24*","7+","1-","3-","1-"]
 	for cage in [[0,1],[2,3],[4,8],[5,6,7],[9,10,14],[12,13],[11,15]]:
 		# [[0,1],[2,3,7,11],[4,8,12,13],[5,6],[9,10],[14,15]]
+		# Have to hard code 7.0 here rather than float(cage.size())
 		color.h = cid / 7.0
 		for idx in cage.size():
 			var b = %Grid.get_child(cage[idx])
@@ -376,7 +372,7 @@ func preset_grid():
 				b.text = ops[cid]
 			else:
 				b.text = ""
-		cid += 1.0
+		cid += 1
 
 
 func _on_preset_pressed():
