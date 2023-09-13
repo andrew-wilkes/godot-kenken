@@ -6,6 +6,7 @@ var current_button: Button
 var cages = {}
 var grid_numbers = []
 var numbers
+var count = 0
 
 class Cage:
 	var cells = []
@@ -56,10 +57,14 @@ func _on_solve_pressed():
 	cages.clear()
 	extract_cages()
 	set_number_sets()
+	var time = Time.get_ticks_msec()
+	count = 0
 	if apply_numbers_to_grid(0):
-		print(grid_numbers)
+		time = Time.get_ticks_msec() - time
+		%Result.text = "Solved in %dms with %d iterations\n\n" % [time, count]\
+		 + stringify_grid(grid_numbers)
 	else:
-		print("FAILED")
+		%Result.text = "FAILED"
 
 
 func extract_cages():
@@ -87,13 +92,28 @@ func set_number_sets():
 
 func apply_numbers_to_grid(cage_id):
 	if cage_id == cages.size():
-		return true 
+		return true
+	count += 1
 	for number_set in cages.values()[cage_id].number_sets:
 		for idx in number_set.size():
 			grid_numbers[cages.values()[cage_id].cells[idx]] = number_set[idx]
 		if valid_grid() and apply_numbers_to_grid(cage_id + 1):
 			return true
+	# None of the number sets could be used so reset the cells
+	for idx in cages.values()[cage_id].cells:
+		grid_numbers[idx] = 0
 	return false
+
+
+func stringify_grid(grid):
+	var chrs = PackedStringArray()
+	var idx = 0
+	for n in grid_size:
+		for m in grid_size:
+			chrs.append(str(grid[idx]) + " ")
+			idx += 1
+		chrs.append("\n")
+	return "".join(chrs)
 
 
 func valid_grid():

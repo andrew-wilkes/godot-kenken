@@ -32,29 +32,37 @@ theme_override_constants/margin_bottom = 20
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Grid" type="GridContainer" parent="M/HB"]
+[node name="VB1" type="VBoxContainer" parent="M/HB"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Grid" type="GridContainer" parent="M/HB/VB1"]
 unique_name_in_owner = true
 layout_mode = 2
 columns = 3
 
-[node name="Cell" type="Button" parent="M/HB/Grid"]
+[node name="Cell" type="Button" parent="M/HB/VB1/Grid"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_rmgue")
 
-[node name="VB" type="VBoxContainer" parent="M/HB"]
+[node name="Result" type="Label" parent="M/HB/VB1"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="VB2" type="VBoxContainer" parent="M/HB"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Label" type="Label" parent="M/HB/VB"]
+[node name="Label" type="Label" parent="M/HB/VB2"]
 layout_mode = 2
 text = "Select a color and click a grid cell to add it to a group.
 Shift click on a cell to add the number + math operator
 such as 12+ to a group.
 Click on the Solve button to evaluate the Kenken puzzle."
 
-[node name="ColorPicker" type="ColorPicker" parent="M/HB/VB"]
+[node name="ColorPicker" type="ColorPicker" parent="M/HB/VB2"]
 unique_name_in_owner = true
 layout_mode = 2
 color = Color(1, 0.231373, 0.231373, 1)
@@ -66,7 +74,7 @@ sliders_visible = false
 hex_visible = false
 presets_visible = false
 
-[node name="Solve" type="Button" parent="M/HB/VB"]
+[node name="Solve" type="Button" parent="M/HB/VB2"]
 layout_mode = 2
 text = "Solve"
 
@@ -82,6 +90,6 @@ offset_bottom = 96.0
 placeholder_text = "Enter number and operator"
 alignment = 1
 
-[connection signal="pressed" from="M/HB/VB/Solve" to="." method="_on_solve_pressed"]
+[connection signal="pressed" from="M/HB/VB2/Solve" to="." method="_on_solve_pressed"]
 [connection signal="popup_hide" from="PopupPanel" to="." method="_on_popup_panel_popup_hide"]
 [connection signal="text_submitted" from="PopupPanel/LineEdit" to="." method="_on_line_edit_text_submitted"]
